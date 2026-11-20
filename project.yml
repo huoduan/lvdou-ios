@@ -1,0 +1,38 @@
+name: LvdouTV
+options:
+  bundleIdPrefix: com.lvdou
+  deploymentTarget:
+    iOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+packages:
+  PythonKit:
+    url: https://github.com/pvieito/PythonKit
+    from: 0.4.0
+targets:
+  LvdouTV:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources
+      - path: Resources
+        excludes: ["Info.plist", "python"]
+      - path: Resources/python
+        type: folder
+    dependencies:
+      - package: PythonKit
+      - framework: Frameworks/Python.xcframework
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.lvdou.tv
+        INFOPLIST_FILE: Resources/Info.plist
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        OTHER_LDFLAGS: "$(inherited) -lc++ -lz"
