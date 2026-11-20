@@ -33,9 +33,9 @@ final class AppState: ObservableObject {
                 config = try JSONDecoder().decode(AppConfig.self, from: JSONSerialization.data(withJSONObject: appCfg))
             }
             sections = Self.parseHome(data["homeConfig"])
-            banners = Self.decode([BannerConfig].self, data["homeConfig"])
-            depots = Self.decode([Depot].self, data["depotConfig"])
-            parses = Self.decode([ParseConfig].self, data["parsesConfig"])
+            banners = Self.decode(BannerConfig.self, data["homeConfig"])
+            depots = Self.decode(Depot.self, data["depotConfig"])
+            parses = Self.decode(ParseConfig.self, data["parsesConfig"])
             if sections.isEmpty { sections = DemoData.sections }
             errorText = nil
             await loadRepos()
@@ -49,7 +49,7 @@ final class AppState: ObservableObject {
     func loadRepos() async {
         var out: [SiteConfig] = []
         for depot in depots {
-            if let s = try? await Engine.fetchRepo(depot.url) { out.append(contentsOf: s) }
+            if let s = try? await SiteEngine.fetchRepo(depot.url) { out.append(contentsOf: s) }
         }
         if !out.isEmpty { sites = out }
     }

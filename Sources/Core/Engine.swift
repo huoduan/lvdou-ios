@@ -113,7 +113,7 @@ enum ParseResolver {
     }
 }
 
-extension Engine {
+extension SiteEngine {
     /// 拉取仓库内容，返回站点列表（支持 JSON 数组 / {"sites":[...]} / 分隔文本）
     static func fetchRepo(_ url: String) async throws -> [SiteConfig] {
         guard let u = URL(string: url) else { throw APIError.badURL }

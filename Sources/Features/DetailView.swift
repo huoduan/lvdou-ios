@@ -43,7 +43,7 @@ struct DetailView: View {
                 Spacer()
                 Text(vod.vod_name).font(.system(size: 22, weight: .heavy))
                 HStack(spacing: 0) {
-                    Text(vod.vod_score ?? "").foregroundStyle(Color(hex: 0xFFC85C)).fontWeight(.bold)
+                    Text(vod.vod_score ?? "").bold().foregroundStyle(Color(hex: 0xFFC85C))
                     Text(" 分 · " + [vod.vod_year, vod.vod_area, vod.type_name].compactMap { $0 }.joined(separator: " · "))
                 }
                 .font(.system(size: 11.5)).foregroundStyle(Color(hex: 0xD5DCE8))

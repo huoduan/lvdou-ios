@@ -49,7 +49,7 @@ struct MineView: View {
                         .font(.system(size: 9.5, weight: .bold))
                         .foregroundStyle(Color(hex: 0x2B1600))
                         .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(state.isLogin ? Theme.gold : Color.white.opacity(0.12), in: Capsule())
+                        .background(state.isLogin ? Color(hex: 0xFFB84D) : Color.white.opacity(0.12), in: Capsule())
                 }
                 Spacer()
                 Image(systemName: "chevron.right").foregroundStyle(Theme.dim)
