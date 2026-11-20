@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # 下载并放置 iOS 内嵌 CPython（Beeware python-apple-support）
-# 用法：先跑本脚本，再 xcodegen generate
+# 结构与 bundle 对应：Resources/python/lib/python3.11/{stdlib, lib-dynload}
 set -euo pipefail
 
 PYVER="3.11"
-TAG="3.11-b13"                       # 3.11 最新构建（含 Python 3.11.18）
+TAG="3.11-b13"
 B="b13"
 BASE="https://github.com/beeware/Python-Apple-support/releases/download/${TAG}"
 TARBALL="Python-${PYVER}-iOS-support.${B}.tar.gz"
@@ -19,23 +19,30 @@ curl -fL -o "${TMP}/${TARBALL}" "${BASE}/${TARBALL}"
 echo "==> 解压"
 tar -xzf "${TMP}/${TARBALL}" -C "${TMP}"
 
-FW="$(find "${TMP}" -type d -name 'Python.xcframework' | head -1)"
-DYNLOAD="$(find "${TMP}" -type d -name 'lib-dynload' -path '*lib/python3.11*' | head -1)"
-
+FW="$(find "${TMP}" -maxdepth 2 -type d -name 'Python.xcframework' | head -1)"
 [ -n "$FW" ] || { echo "未找到 Python.xcframework"; exit 1; }
-[ -n "$DYNLOAD" ] || { echo "未找到 stdlib/lib-dynload"; exit 1; }
 
-# stdlib 根目录：.../python/lib/python3.11/lib-dynload 的上两级 = .../python
-STDLIB_ROOT="$(dirname "$(dirname "$DYNLOAD")")"
+STDLIB_SRC="${FW}/lib/python${PYVER}"
+DYNLOAD_SRC="$(find "${FW}/ios-arm64" -type d -name 'lib-dynload' | head -1)"
+SYSCONF="$(find "${FW}/ios-arm64" -name '_sysconfigdata__ios_arm64-iphoneos.py' | head -1)"
 
-echo "==> 放置 Python.xcframework -> Frameworks/"
+[ -d "$STDLIB_SRC" ] || { echo "未找到标准库: $STDLIB_SRC"; exit 1; }
+[ -n "$DYNLOAD_SRC" ] || { echo "未找到 lib-dynload"; exit 1; }
+
+echo "==> Python.xcframework -> Frameworks/"
 rm -rf "${ROOT}/Frameworks/Python.xcframework"
 mkdir -p "${ROOT}/Frameworks"
 cp -R "${FW}" "${ROOT}/Frameworks/Python.xcframework"
 
-echo "==> 放置 stdlib -> Resources/python/"
+echo "==> 标准库 -> Resources/python/lib/python${PYVER}/"
+DST="${ROOT}/Resources/python/lib/python${PYVER}"
 rm -rf "${ROOT}/Resources/python"
-cp -R "${STDLIB_ROOT}" "${ROOT}/Resources/python"
+mkdir -p "${DST}"
+cp -R "${STDLIB_SRC}/." "${DST}/"
+cp -R "${DYNLOAD_SRC}" "${DST}/lib-dynload"
+[ -n "$SYSCONF" ] && cp "$SYSCONF" "${DST}/"
 
 echo "==> 完成"
 du -sh "${ROOT}/Frameworks/Python.xcframework" "${ROOT}/Resources/python"
+echo "stdlib 模块数: $(find "${DST}" -name '*.py' | wc -l)"
+echo "扩展模块数: $(find "${DST}/lib-dynload" -name '*.so' | wc -l)"
