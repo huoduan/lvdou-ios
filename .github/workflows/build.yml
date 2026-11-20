@@ -1,0 +1,31 @@
+name: build-ipa
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Bootstrap embedded Python
+        run: bash scripts/bootstrap-python.sh
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build (unsigned)
+        run: |
+          xcodebuild -project LvdouTV.xcodeproj -scheme LvdouTV \
+            -sdk iphoneos -configuration Release \
+            -archivePath build/LvdouTV.xcarchive archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Package unsigned ipa
+        run: |
+          mkdir -p build/Payload
+          cp -R build/LvdouTV.xcarchive/Products/Applications/LvdouTV.app build/Payload/
+          cd build && zip -qry LvdouTV-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LvdouTV-unsigned-ipa
+          path: build/LvdouTV-unsigned.ipa
